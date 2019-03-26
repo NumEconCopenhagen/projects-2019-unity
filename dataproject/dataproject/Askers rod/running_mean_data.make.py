@@ -15,13 +15,18 @@ d = web.DataReader(['TSLA', 'GOOG', 'MAERSK-A.CO'], 'yahoo', start, end)
 # set index to date
 d.index = pd.to_datetime(d.index)
 # add column indicating year
-d['year']=d.index.year
+#d['year']=d.index.year
 #rename column company to year
 d.columns.rename(['Attributes', 'Company'],inplace  = True)
 #show DataFrame
 d
 
+#make into tall format
+''' 
+d = d.T.stack().rename_axis(['Date','Company','Attributes']).reset_index()
 
+d.columns
+'''
 
 ### Data cleaning ###
 '''
@@ -51,9 +56,23 @@ np.where(pd.isnull(d))
 rm_200 = d.rolling(200).mean()['Close']
 rm_50 = d.rolling(50).mean()['Close']
 
-#checking for nonacepted means (x-coordinates should go no higher than 198 and 48)
+#checking for missing values 
+# (x-coordinates should go no higher than 198 and 48, below this is accepted since the means needs 
 np.where(pd.isnull(rm_200))
 np.where(pd.isnull(rm_50))
 
-## merge these new dataframe into the big one
+## these two new DataFrames are now concated to one with a multiIndex
 
+rm = pd.concat((rm_200,rm_50), keys=['rm_200', 'rm_50'], names=['Attributes', 'Company'], axis=1)
+
+# which can then be merged to the main DataFrame
+#d.concat([(d,rm)], \
+ #       keys=['High', 'Low', 'Open', 'Close', 'Volume', 'Adj Close', 'year','rm_200', 'rm_50'], names= ['Attributes', 'Company'], axis=1)
+
+
+##  virker ikke 
+d = d.T.merge(rm.T, on = 'Date', right_index=True)
+
+
+rm_200.columns
+rm_50.index
