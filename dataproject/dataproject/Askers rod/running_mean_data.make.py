@@ -45,8 +45,6 @@ d.fillna(method='ffill',inplace = True)
 np.where(pd.isnull(d))
 
 
-
-
 ### Creating aditional columns ###
 
 # make 200 and 50 days running mean :
@@ -56,4 +54,6 @@ rm_50 = d.rolling(50).mean()['Close']
 #checking for nonacepted means (x-coordinates should go no higher than 198 and 48)
 np.where(pd.isnull(rm_200))
 np.where(pd.isnull(rm_50))
+
+## merge these new dataframe into the big one
 
