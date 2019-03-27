@@ -43,7 +43,7 @@ for these days the NaN (missing value) will be replaced with the mean of the two
 d.interpolate(inplace = True)
 
 '''
-Alternatively values could have been replaced with the value of the previous day
+lternatively values could have been replaced with the value of the previous day
 # replaces missing values with the previous day
 d.fillna(method='ffill',inplace = True)
 '''
