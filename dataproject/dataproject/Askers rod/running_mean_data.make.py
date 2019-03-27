@@ -73,6 +73,9 @@ d = d.join(rm)
 d
 
 
+### export to jason format for later plotting in other scrip
+d.to_json('data.json')
+
 #### Plotting
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource
