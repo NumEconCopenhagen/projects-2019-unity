@@ -21,28 +21,29 @@ d.columns.rename(['Attributes', 'Company'],inplace  = True)
 #show DataFrame
 d
 
-#make into tall format
+#make into tall format not used
 ''' 
 d = d.T.stack().rename_axis(['Date','Company','Attributes']).reset_index()
 
 d.columns
 '''
 
+
+# checks for missing values
+np.where(pd.isnull(d))
+
 ### Data cleaning ###
 '''
 Because the Danish and American stockexchange are sometimes open on different days, 
 data is missing for some days when one is open and the other is not
-for these days the NaN (missing value) will be replaced with the value of the previous day
+for these days the NaN (missing value) will be replaced with the mean of the two surrounding values
 '''
-# checks for missing values
-np.where(pd.isnull(d))
-
 
 # replaces value with mean of the two surrounding values:
 d.interpolate(inplace = True)
 
 '''
-alternatively values could have been replaced with the value of the previous day
+Alternatively values could have been replaced with the value of the previous day
 # replaces missing values with the previous day
 d.fillna(method='ffill',inplace = True)
 '''
