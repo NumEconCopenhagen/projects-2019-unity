@@ -74,7 +74,7 @@ d
 
 
 ### export to jason format for later plotting in other scrip
-d.to_json('data.json')
+d.to_json('dataproject/dataproject/Askers rod/data.json')
 
 #### Plotting
 from bokeh.plotting import figure, show
