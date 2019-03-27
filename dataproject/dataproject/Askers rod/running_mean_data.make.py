@@ -66,9 +66,6 @@ np.where(pd.isnull(rm_50))
 rm = pd.concat((rm_200,rm_50), keys=['rm_200', 'rm_50'], names=['Attributes', 'Company'], axis=1)
 
 # which can then be merged to the main DataFrame
-#d.concat([(d,rm)], \
- #       keys=['High', 'Low', 'Open', 'Close', 'Volume', 'Adj Close', 'year','rm_200', 'rm_50'], names= ['Attributes', 'Company'], axis=1)
-
 
 ##  virker ikke 
 d = d.T.merge(rm.T, on = 'Date', right_index=True)
