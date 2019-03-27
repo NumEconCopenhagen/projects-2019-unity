@@ -51,7 +51,7 @@ np.where(pd.isnull(d))
 
 
 ### Creating aditional columns ###
-
+ 
 # make 200 and 50 days running mean :
 rm_200 = d.rolling(200).mean()['Close']
 rm_50 = d.rolling(50).mean()['Close']
@@ -73,23 +73,12 @@ d = d.join(rm)
 d
 
 
-### export to jason format for later plotting in other scrip
-d.to_json('dataproject/dataproject/Askers rod/data.json')
 
-#### Plotting
-from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource
 
-source = ColumnDataSource(d)
+### export to hdf5-format for later plotting in other scripts
+# We use hdf5 because it functions well with multiindex
 
-source.data
-
-p = figure(x_axis_type="datetime")
-p.line(x='Date', y='Close_GOOG', source=source)
-p.line(x='Date', y='rm_200_GOOG', source=source, color='black')
-p.line(x='Date', y='rm_50_GOOG', source=source, color='red')
-show(p)
-
+d.to_hdf('dataproject/dataproject/Askers rod/data.h5', key='losses')
 
 
 
