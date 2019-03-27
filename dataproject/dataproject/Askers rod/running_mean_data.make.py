@@ -65,11 +65,31 @@ np.where(pd.isnull(rm_50))
 
 rm = pd.concat((rm_200,rm_50), keys=['rm_200', 'rm_50'], names=['Attributes', 'Company'], axis=1)
 
-# which can then be merged to the main DataFrame
+# Which can then be merged to the main DataFrame, 
+# using only join since both have same multiindex (in column) and index(Date)
+d = d.join(rm)
 
-##  virker ikke 
-d = d.T.merge(rm.T, on = 'Date', right_index=True)
+# check it out:
+d
 
 
-rm_200.columns
-rm_50.index
+#### Plotting
+from bokeh.plotting import figure, show
+from bokeh.models import ColumnDataSource
+
+source = ColumnDataSource(d)
+
+source.data
+
+p = figure(x_axis_type="datetime")
+p.line(x='Date', y='Close_GOOG', source=source)
+p.line(x='Date', y='rm_200_GOOG', source=source, color='black')
+p.line(x='Date', y='rm_50_GOOG', source=source, color='red')
+show(p)
+
+
+
+
+
+
+
