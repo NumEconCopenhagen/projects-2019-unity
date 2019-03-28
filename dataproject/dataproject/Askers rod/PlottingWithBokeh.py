@@ -45,26 +45,6 @@ p = figure(x_axis_type='datetime',title=f'Graph with close', \
 
 p.line(x='x', y='y', source=close, color = 'blue', legend='close')
 
-def update_plot(attr, old, new):
-    if new == "GOOG": 
-        close.data = {
-            'x' : np.array(d.index),
-            'y' : np.array(d['Close']['GOOG'])
-        }
-    else:
-        close.data = {
-            'x' : np.array(d.index),
-            'y' : np.array(d['Close']['TSLA'])
-        }
-select = Select(title="Company", options=["GOOG", "TSLA"], value="GOOG")
-select.on_change("value",update_plot)
-
-layout = row(select, p)
-curdoc().add_root(layout)
-
-curdoc()
-show(layout)
-
 show(p)
 
 ## graphing
