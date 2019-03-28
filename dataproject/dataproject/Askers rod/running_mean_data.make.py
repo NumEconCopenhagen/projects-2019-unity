@@ -77,7 +77,7 @@ d
 
 
 ### extra clean-up
-# MultiIndexes have levels right now Atributes is first, Symbols(company)is second
+# MultiIndexes have levels, right now Atributes is first, Symbols(company)is second
 # this line makes Symbos first 
 d = d.swaplevel(axis=1)
 #Sort DataFrame
