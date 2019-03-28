@@ -9,7 +9,7 @@ def download_data_with_runmean(corporations=['GOOG'], \
     start = datetime.datetime(2011, 1, 1),end = datetime.datetime(2017, 12, 31)):
    
     # Download data
-    d = web.DataReader(corporations, 'yahoo', start, end)
+    d = web.DataReader([corporations, 'MAERSK-A.CO'], 'yahoo', start, end)
 
     #rename columns Symbols to Company 
     d.columns.rename(['Attributes','Company'],inplace  = True)
