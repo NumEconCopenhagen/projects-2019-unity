@@ -34,4 +34,6 @@ p = figure(x_axis_type='datetime',title=f'Graph with running means for {comp}', 
 p.line(x='Date', y=f'Close_{comp}', source=source, color = 'blue', legend= 'close')
 p.line(x='Date', y=f'rm_200_{comp}', source=source, color='black', line_dash='4 4', legend = '200 days')
 p.line(x='Date', y=f'rm_50_{comp}', source=source, color='red', line_dash='4 4',legend = '50 days')
+p.legend.location = "top_left"
+
 show(p)
