@@ -24,13 +24,22 @@ d.columns.rename(['Attributes','Company'],inplace  = True)
 #show DataFrame
 d
 
+
+### nice to know with multiindexes but not used here
 #make into tall format not used
 ''' 
 d = d.T.stack().rename_axis(['Date','Company','Attributes']).reset_index()
 
 d.columns
 '''
+'''
+# Reference second level of multiIndex
+#with slice
+d.T.loc[(slice(None), 'GOOG'), :]
+# .xs -method
+d.xs('GOOG',level='Company', axis=1, drop_level=False)
 
+'''
 
 # checks for missing values
 np.where(pd.isnull(d))
