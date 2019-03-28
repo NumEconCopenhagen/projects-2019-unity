@@ -42,7 +42,6 @@ close = ColumnDataSource(data= \
 
 p = figure(x_axis_type='datetime',title=f'Graph with close', \
     tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
-
 p.line(x='x', y='y', source=close, color = 'blue', legend='close')
 
 show(p)

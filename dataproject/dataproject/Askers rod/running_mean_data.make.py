@@ -13,11 +13,13 @@ end = datetime.datetime(2017, 12, 31)
 # import data
 d = web.DataReader(['TSLA', 'GOOG', 'MAERSK-A.CO'], 'yahoo', start, end)
 # set index to date
-d.index = pd.to_datetime(d.index)
-# add column indicating year
+# not neacesary d.index = pd.to_datetime(d.index)
+# add column indicating year notused
 #d['year']=d.index.year
-#rename column company to year
-d.columns.rename(['Attributes', 'Company'],inplace  = True)
+
+#rename columns Symbols to Company 
+d.columns.rename(['Attributes','Company'],inplace  = True)
+
 #show DataFrame
 d
 
@@ -74,7 +76,13 @@ d = d.join(rm)
 d
 
 
-
+### extra clean-up
+# MultiIndexes have levels right now Atributes is first, Symbols(company)is second
+# this line makes Symbos first 
+d = d.swaplevel(axis=1)
+#Sort DataFrame
+d.sort_index(axis=1,inplace=True)
+d
 
 ### export to hdf5-format for later plotting in other scripts
 # We use hdf5 because it functions well with multiindex
