@@ -5,11 +5,18 @@ import numpy as np
 
 
 
-def download_data_with_runmean(corporations=['GOOG'], \
-    start = datetime.datetime(2011, 1, 1),end = datetime.datetime(2017, 12, 31)):
-   
+def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2017):
+    
+    # We download an extra year back so we have running mean for the whole period 
+    # (we have to go more than 200 days back because of holidays etc.)
+
+    start_download = datetime.datetime((from_year-1), 1, 1)
+    start_show = datetime.datetime((from_year), 1, 1)
+    end = datetime.datetime(to_year, 12, 31)
+
+    
     # Download data
-    d = web.DataReader(corporations, 'yahoo', start, end)
+    d = web.DataReader(companys, 'yahoo', start_download, end)
 
     #rename columns Symbols to Company 
     d.columns.rename(['Attributes','Company'],inplace  = True)
@@ -32,5 +39,8 @@ def download_data_with_runmean(corporations=['GOOG'], \
     d = d.swaplevel(axis=1)
     #Sort DataFrame
     d.sort_index(axis=1,inplace=True)
+
+
+    d = d.loc[start_show:]
 
     return d

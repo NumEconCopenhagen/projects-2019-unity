@@ -5,13 +5,14 @@ import numpy as np
 
 
 # set timeframe we want to analyze:
-start = datetime.datetime(2011, 1, 1)
+start_download = datetime.datetime(2010, 1, 1)
+start_show = datetime.datetime(2011, 1, 1)
 end = datetime.datetime(2017, 12, 31)
 
 ### Data import ####
 
 # import data
-d = web.DataReader(['TSLA', 'GOOG', 'MAERSK-A.CO'], 'yahoo', start, end)
+d = web.DataReader(['TSLA', 'GOOG', 'MAERSK-A.CO'], 'yahoo', start_download, end)
 # set index to date
 # not neacesary d.index = pd.to_datetime(d.index)
 # add column indicating year notused
@@ -82,15 +83,15 @@ d
 d = d.swaplevel(axis=1)
 #Sort DataFrame
 d.sort_index(axis=1,inplace=True)
+
+
+# delete the extra year, that was downloaded to make runing mean:
+
+d = d.loc[start_show:]
 d
 
 ### export to hdf5-format for later plotting in other scripts
 # We use hdf5 because it functions well with multiindex
 
 d.to_hdf('dataproject/dataproject/Askers rod/data.h5', key='losses')
-
-
-
-
-
 
