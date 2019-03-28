@@ -6,9 +6,20 @@ import numpy as np
 d = pd.read_hdf('dataproject/dataproject/Askers rod/data.h5', key='losses')
 d
 
+# for later reference we make lists of our options
+company_list = list(d.columns.levels[1])
+attribute_list = list(d.columns.levels[0])
+
+
 #### Plotting
+
+#imports for plot
 from bokeh.plotting import figure, show, output_file
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Select
+from bokeh.io import curdoc
+# imports for interaction
+from bokeh.layouts import widgetbox, row
+from bokeh.models.widgets import Select
 
 source = ColumnDataSource(d)
 
@@ -22,12 +33,44 @@ source.column_names
 GOOG = [s for s in source.column_names if 'GOOG' in s]
 GOOG
 
+source.data
+np.array(d['Close']['GOOG'])
 
+
+close = ColumnDataSource(data= \
+    {'x' : np.array(d.index), 'y' : np.array(d['Close']['GOOG'])})
+
+p = figure(x_axis_type='datetime',title=f'Graph with close', \
+    tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
+
+p.line(x='x', y='y', source=close, color = 'blue', legend='close')
+
+def update_plot(attr, old, new):
+    if new == "GOOG": 
+        close.data = {
+            'x' : np.array(d.index),
+            'y' : np.array(d['Close']['GOOG'])
+        }
+    else:
+        close.data = {
+            'x' : np.array(d.index),
+            'y' : np.array(d['Close']['TSLA'])
+        }
+select = Select(title="Company", options=["GOOG", "TSLA"], value="GOOG")
+select.on_change("value",update_plot)
+
+layout = row(select, p)
+curdoc().add_root(layout)
+
+curdoc()
+show(layout)
+
+show(p)
 
 ## graphing
 output_file('runmean.html')
 
-comp = "GOOG"
+comp = company_list[0]
 
 p = figure(x_axis_type='datetime',title=f'Graph with running means for {comp}', \
     tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
@@ -35,5 +78,12 @@ p.line(x='Date', y=f'Close_{comp}', source=source, color = 'blue', legend= 'clos
 p.line(x='Date', y=f'rm_200_{comp}', source=source, color='black', line_dash='4 4', legend = '200 days')
 p.line(x='Date', y=f'rm_50_{comp}', source=source, color='red', line_dash='4 4',legend = '50 days')
 p.legend.location = "top_left"
+
+
+## interactive
+# For specific companys, could make options list dependent on source.column_names
+select = Select(title='Company:', value=company_list[0], options=company_list)
+
+
 
 show(p)
