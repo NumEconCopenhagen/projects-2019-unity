@@ -44,3 +44,5 @@ def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2
     d = d.loc[start_show:]
 
     return d
+
+
