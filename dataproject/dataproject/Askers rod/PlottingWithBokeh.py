@@ -7,8 +7,8 @@ d = pd.read_hdf('dataproject/dataproject/Askers rod/data.h5', key='losses')
 d
 
 # for later reference we make lists of our options
-company_list = list(d.columns.levels[1])
-attribute_list = list(d.columns.levels[0])
+company_list = list(d.columns.levels[0])
+attribute_list = list(d.columns.levels[1])
 
 
 #### Plotting
@@ -33,6 +33,8 @@ source.column_names
 GOOG = [s for s in source.column_names if 'GOOG' in s]
 GOOG
 
+d = d.swaplevel(axis=1)
+
 source.data
 np.array(d['Close']['GOOG'])
 
@@ -43,26 +45,5 @@ close = ColumnDataSource(data= \
 p = figure(x_axis_type='datetime',title=f'Graph with close', \
     tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
 p.line(x='x', y='y', source=close, color = 'blue', legend='close')
-
-show(p)
-
-## graphing
-output_file('runmean.html')
-
-comp = company_list[0]
-
-p = figure(x_axis_type='datetime',title=f'Graph with running means for {comp}', \
-    tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
-p.line(x='Date', y=f'Close_{comp}', source=source, color = 'blue', legend= 'close')
-p.line(x='Date', y=f'rm_200_{comp}', source=source, color='black', line_dash='4 4', legend = '200 days')
-p.line(x='Date', y=f'rm_50_{comp}', source=source, color='red', line_dash='4 4',legend = '50 days')
-p.legend.location = "top_left"
-
-
-## interactive
-# For specific companys, could make options list dependent on source.column_names
-select = Select(title='Company:', value=company_list[0], options=company_list)
-
-
 
 show(p)
