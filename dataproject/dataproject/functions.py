@@ -52,11 +52,37 @@ from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, Select
 from ipywidgets import interact
 
-def plot_closing(d):
+
+
+def plot_close(d):
     company_list = list(d.columns.levels[0])
     company = list(d.columns.levels[0])[0]
     companysource = ColumnDataSource(d[company])
-    p = figure(x_axis_type='datetime',title=f'Graph with running means for {company}', \
+    p = figure(x_axis_type='datetime',title=f'Closing price of {company}', \
+        tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
+
+    p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
+    p.legend.location = "top_left"
+
+
+    def update_name(company):
+        p.title.text = f'Closing price of {company}'
+        companysource.data = ColumnDataSource(d[str(company)]).data
+        push_notebook()
+    
+    show(p,notebook_handle=True)
+
+
+    interact(update_name,company=company_list)
+
+
+
+
+def plot_close_mean(d):
+    company_list = list(d.columns.levels[0])
+    company = list(d.columns.levels[0])[0]
+    companysource = ColumnDataSource(d[company])
+    p = figure(x_axis_type='datetime',title=f'Closing price and running mean of {company}', \
         tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
 
     p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
@@ -66,7 +92,7 @@ def plot_closing(d):
 
 
     def update_name(company):
-        p.title.text = 'Closing price and running mean of ' + str(company)
+        p.title.text = f'Closing price and running mean of {company}'
         companysource.data = ColumnDataSource(d[str(company)]).data
         push_notebook()
     
