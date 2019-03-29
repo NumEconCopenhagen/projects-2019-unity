@@ -3,12 +3,16 @@ introductory statistics
 
 basic evolution of price in period we examine - Asker 
 
-200 day running mean, golden cross - Asker
-50 day running mean
-
 candlestick - Marcell 
 
-Also:
 
-Cleaning and making figures pretty 
-Make interactive
+
+To do:
+
+Clean up the final file
+add legend highlight to bokeh plots
+add the candlestick
+
+write the read me 
+
+add more explanation of what each step does

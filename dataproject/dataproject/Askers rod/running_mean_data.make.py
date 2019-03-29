@@ -13,6 +13,8 @@ end = datetime.datetime(2017, 12, 31)
 
 # import data
 d = web.DataReader(['TSLA', 'GOOG', 'MAERSK-A.CO'], 'yahoo', start_download, end)
+d
+
 # set index to date
 # not neacesary d.index = pd.to_datetime(d.index)
 # add column indicating year notused
