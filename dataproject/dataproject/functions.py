@@ -49,17 +49,32 @@ def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2
 
 from bokeh.io import output_notebook, push_notebook,show
 from bokeh.plotting import figure, show, output_file
-from bokeh.models import ColumnDataSource, Select
+from bokeh.models import ColumnDataSource, HoverTool
 from ipywidgets import interact
 
 
+# This function plots the closing price of companys in the DataFrame 'd' in an interactive way
 
 def plot_close(d):
+
+    ## Hovertool does so that when your mouse 'hovers' over the graph price and date is shown
+    hover = HoverTool(tooltips=[('Date','@Date{%F}')] ,formatters = {'Date':'datetime'})
+    #  $y{0.0} defines value y with one decimal
+    #  @x{%F} defines value x and use format option, fomatters then define that we use datetime format, 
+    # since the x-value is the date.
+
+
+    ## tools allows you to pan around, zoom in (you have to choose the boxzoom option in the graph then 
+    # 'mark' area you wish to view) 
+    ## reset to original position (there is no zoom in, besides this option),
+    # and save a the graph as a picture
+    tools="pan,box_zoom,reset,save"
+
     company_list = list(d.columns.levels[0])
     company = list(d.columns.levels[0])[0]
     companysource = ColumnDataSource(d[company])
     p = figure(x_axis_type='datetime',title=f'Closing price of {company}', \
-        tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
+        tools=[hover,tools], y_axis_label='Closing price', x_axis_label='Date')
 
     p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
     p.legend.location = "top_left"
@@ -79,11 +94,27 @@ def plot_close(d):
 
 
 def plot_close_mean(d):
+
+
+    ## Hovertool does so that when your mouse 'hovers' over the graph price and date is shown
+    hover = HoverTool(tooltips=[('Date','@Date{%F}')] ,formatters = {'Date':'datetime'})
+    #  $y{0.0} defines value y with one decimal
+    #  @x{%F} defines value x and use format option, fomatters then define that we use datetime format, 
+    # since the x-value is the date.
+
+
+    ## tools allows you to pan around, zoom in (you have to choose the boxzoom option in the graph then 
+    # 'mark' area you wish to view) 
+    ## reset to original position (there is no zoom in, besides this option),
+    # and save a the graph as a picture
+    tools="pan,box_zoom,reset,save"
+
+
     company_list = list(d.columns.levels[0])
     company = list(d.columns.levels[0])[0]
     companysource = ColumnDataSource(d[company])
     p = figure(x_axis_type='datetime',title=f'Closing price and running mean of {company}', \
-        tools="pan,box_zoom,reset,save", y_axis_label='Closing price', x_axis_label='Date')
+        tools=[hover,tools], y_axis_label='Closing price', x_axis_label='Date')
 
     p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
     p.line(x='Date', y='rm_200', source=companysource, color='black', line_dash='4 4', legend = '200 days')
