@@ -52,7 +52,7 @@ from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, Select
 from ipywidgets import interact
 
-def plot_clossing(d):
+def plot_closing(d):
     company_list = list(d.columns.levels[0])
     company = list(d.columns.levels[0])[0]
     companysource = ColumnDataSource(d[company])
