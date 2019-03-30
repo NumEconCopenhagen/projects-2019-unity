@@ -58,8 +58,8 @@ def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2
 from bokeh.io import output_notebook, push_notebook,show
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool
-from ipywidgets import interact
-
+import ipywidgets as widgets
+from ipywidgets import interact 
 
 # This function plots the closing price of companys in the DataFrame 'd' in an interactive way
 
@@ -94,10 +94,14 @@ def plot_close(d):
         companysource.data = ColumnDataSource(d[str(company)]).data
         push_notebook()
     
+    
     show(p,notebook_handle=True)
 
-
-    interact(update_name,company=company_list)
+    
+    drop_down = widgets.Dropdown(options=company_list, layout = {'width':'50%'},\
+        description='Choose a company or index:',style = {'description_width': 'initial'})
+    interact(update_name, company = drop_down)
+    
 
 
 
@@ -126,8 +130,8 @@ def plot_close_mean(d):
     p = figure(x_axis_type='datetime',title=f'Closing price and running mean of {company}', \
         tools=[hover,tools], y_axis_label='Closing price', x_axis_label='Date')
 
-    p.line(x='Date', y='Adj_Close', source=companysource, color = 'blue', legend= 'Closing price',muted_alpha=0.2)
-    p.line(x='Date', y='rm_200', source=companysource, color='black', line_dash='4 4', legend = '200 days',muted_alpha=0.2)
+    p.line(x='Date', y='Adj_Close', source=companysource, color = 'blue', legend= 'Closing price',muted_alpha=0.3,line_width=0.5)
+    p.line(x='Date', y='rm_200', source=companysource, color='indigo', line_dash='4 4', legend = '200 days',muted_alpha=0.2)
     p.line(x='Date', y='rm_50', source=companysource, color='red', line_dash='4 4',legend = '50 days',muted_alpha=0.2)
     p.legend.location = "top_left"
     p.ygrid.minor_grid_line_color = 'navy'
@@ -141,5 +145,7 @@ def plot_close_mean(d):
     
     show(p,notebook_handle=True)
 
-
-    interact(update_name,company=company_list)
+    
+    drop_down = widgets.Dropdown(options=company_list, layout = {'width':'50%'},\
+        description='Choose a company or index:',style = {'description_width': 'initial'})
+    interact(update_name, company = drop_down)
