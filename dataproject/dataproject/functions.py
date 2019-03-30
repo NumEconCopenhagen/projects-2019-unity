@@ -78,7 +78,8 @@ def plot_close(d):
 
     p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
     p.legend.location = "top_left"
-
+    p.ygrid.minor_grid_line_color = 'navy'
+    p.ygrid.minor_grid_line_alpha = 0.1
 
     def update_name(company):
         p.title.text = f'Closing price of {company}'
@@ -121,7 +122,8 @@ def plot_close_mean(d):
     p.line(x='Date', y='rm_200', source=companysource, color='black', line_dash='4 4', legend = '200 days')
     p.line(x='Date', y='rm_50', source=companysource, color='red', line_dash='4 4',legend = '50 days')
     p.legend.location = "top_left"
-
+    p.ygrid.minor_grid_line_color = 'navy'
+    p.ygrid.minor_grid_line_alpha = 0.1
 
     def update_name(company):
         p.title.text = f'Closing price and running mean of {company}'
