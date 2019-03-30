@@ -7,8 +7,9 @@ import numpy as np
 
 
 ## The function that downloads data, it can take, multiple companys and different years depending on your need
-def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2017):
+def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2017, comp_dict = {'GOOG':'Google'}):
     
+
     # We download an extra year back so we have running mean for the whole period 
     # (we have to go more than 200 days back because of holidays etc.)
 
@@ -22,11 +23,18 @@ def download_data_with_runmean(companys=['GOOG'], from_year = 2011 , to_year = 2
 
     #rename columns Symbols to Company 
     d.columns.rename(['Attributes','Company'],inplace  = True)
-    d.interpolate(inplace = True)
+
+    # Reanme 'Adj_Close' to 'Adj_Close'
+    d.rename(columns = {'Adj Close': 'Adj_Close'} ,inplace  = True)
+
+    # Update Names from symbols. The dictionairy has to be passed as an argument
+    d.rename(columns = comp_dict, inplace = True)
+    # Replace missing values with mean of the values from the day before and the day after
+    d.interpolate(limit=3, inplace = True)
 
     # make 200 and 50 days running mean :
-    rm_200 = d.rolling(200).mean()['Close']
-    rm_50 = d.rolling(50).mean()['Close']
+    rm_200 = d.rolling(200).mean()['Adj_Close']
+    rm_50 = d.rolling(50).mean()['Adj_Close']
 
     ## these two new DataFrames are now concated to one with a multiIndex
     rm = pd.concat((rm_200,rm_50), keys=['rm_200', 'rm_50'], names=['Attributes', 'Company'], axis=1)
@@ -58,7 +66,7 @@ from ipywidgets import interact
 def plot_close(d):
 
     ## Hovertool does so that when your mouse 'hovers' over the graph price and date is shown
-    hover = HoverTool(tooltips=[('Price','@Close{0.0}'),('Volume','@Volume'),('Date','@Date{%F}')] ,formatters = {'Date':'datetime'})
+    hover = HoverTool(tooltips=[('Price','@Adj_Close{0.0}'),('Volume','@Volume'),('Date','@Date{%F}')] ,formatters = {'Date':'datetime'})
     #  $y{0.0} defines value y with one decimal
     #  @x{%F} defines value x and use format option, fomatters then define that we use datetime format, 
     # since the x-value is the date.
@@ -76,7 +84,7 @@ def plot_close(d):
     p = figure(x_axis_type='datetime',title=f'Closing price of {company}', \
         tools=[hover,tools], y_axis_label='Closing price', x_axis_label='Date')
 
-    p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
+    p.line(x='Date', y='Adj_Close', source=companysource, color = 'blue', legend= 'Closing price')
     p.legend.location = "top_left"
     p.ygrid.minor_grid_line_color = 'navy'
     p.ygrid.minor_grid_line_alpha = 0.1
@@ -98,7 +106,7 @@ def plot_close_mean(d):
 
 
     ## Hovertool does so that when your mouse 'hovers' over the graph price and date is shown
-    hover = HoverTool(tooltips=[('Closing price','@Close{0.0}'),('50 days','@rm_50{0.0}'),\
+    hover = HoverTool(tooltips=[('Closing price','@Adj_Close{0.0}'),('50 days','@rm_50{0.0}'),\
         ('200 days','@rm_200{0.0}'),('Volume','@Volume'),('Date','@Date{%F}')] , formatters = {'Date':'datetime'})
     #  $y{0.0} defines value y with one decimal
     #  @x{%F} defines value x and use format option, fomatters then define that we use datetime format, 
@@ -118,12 +126,13 @@ def plot_close_mean(d):
     p = figure(x_axis_type='datetime',title=f'Closing price and running mean of {company}', \
         tools=[hover,tools], y_axis_label='Closing price', x_axis_label='Date')
 
-    p.line(x='Date', y='Close', source=companysource, color = 'blue', legend= 'Closing price')
-    p.line(x='Date', y='rm_200', source=companysource, color='black', line_dash='4 4', legend = '200 days')
-    p.line(x='Date', y='rm_50', source=companysource, color='red', line_dash='4 4',legend = '50 days')
+    p.line(x='Date', y='Adj_Close', source=companysource, color = 'blue', legend= 'Closing price',muted_alpha=0.2)
+    p.line(x='Date', y='rm_200', source=companysource, color='black', line_dash='4 4', legend = '200 days',muted_alpha=0.2)
+    p.line(x='Date', y='rm_50', source=companysource, color='red', line_dash='4 4',legend = '50 days',muted_alpha=0.2)
     p.legend.location = "top_left"
     p.ygrid.minor_grid_line_color = 'navy'
     p.ygrid.minor_grid_line_alpha = 0.1
+    p.legend.click_policy="mute"
 
     def update_name(company):
         p.title.text = f'Closing price and running mean of {company}'
