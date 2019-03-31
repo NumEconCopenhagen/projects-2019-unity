@@ -88,8 +88,8 @@ from ipywidgets import interact
 def plot_close(d):
 
     ## Hovertool does so that when your mouse 'hovers' over the graph price and date is shown
-    hover = HoverTool(tooltips=[('Price','@Adj_Close{0.0}'),('Volume','@Volume'),('Date','@Date{%F}')] ,formatters = {'Date':'datetime'})
-    #  $y{0.0} defines value y with one decimal
+    hover = HoverTool(tooltips=[('Price','@Adj_Close{0,0.}'),('Volume','@Volume{0,0.}'),('Date','@Date{%F}')] ,formatters = {'Date':'datetime'})
+    #  $y{0,0.0} is formatiing, "0," defines value y with comma (like 1000 is 1,000) and "0.0" is one decimal
     #  @x{%F} defines value x and use format option, fomatters then define that we use datetime format, 
     # since the x-value is the date.
 
@@ -157,8 +157,8 @@ def plot_close_mean(d):
 
 
     ## Hovertool does so that when your mouse 'hovers' over the graph price and date is shown
-    hover = HoverTool(tooltips=[('Closing price','@Adj_Close{0.0}'),('50 days','@rm_50{0.0}'),\
-        ('200 days','@rm_200{0.0}'),('Volume','@Volume'),('Date','@Date{%F}')] , formatters = {'Date':'datetime'})
+    hover = HoverTool(tooltips=[('Closing price','@Adj_Close{0,0.}'),('50 days','@rm_50{0,0.0}'),\
+        ('200 days','@rm_200{0,0.0}'),('Volume','@Volume{0,0.}'),('Date','@Date{%F}')] , formatters = {'Date':'datetime'})
     #  $y{0.0} defines value y with one decimal
     #  @x{%F} defines value x and use format option, fomatters then define that we use datetime format, 
     # since the x-value is the date.
