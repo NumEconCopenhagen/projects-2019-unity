@@ -6,6 +6,8 @@ def plot(x,y):
     ax = fig.add_subplot(1,1,1)
     ax.plot(x,y)
 
-def hello():
-    print(hello)
-    # Makro
+def plot2(x,y1,y2):
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.plot(x,y1)
+    ax.plot(x,y2)
