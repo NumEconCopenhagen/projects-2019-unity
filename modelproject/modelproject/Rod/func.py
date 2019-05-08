@@ -32,23 +32,24 @@ def total_utility(c, beta, theta):
 def prod(k,l,alpha,b):
     return (b*k**alpha)*(l**(1-alpha))
 
-def tot_ut_multiple_sks_quick(sks, k0, l, b, beta, theta, alpha, delta):
+def tot_ut_multiple_sks_quick(sks, k0, l0, n, b, beta, theta, alpha, delta):
     '''
     Finds total utitilty for a set of years with a savingsrate for each year
     '''
     t = len(sks)
     k_short = np.empty(t)
     k_short[0] = k0
+    l_short = np.array([l0*(1+n)**i for i in range(t)])
     
     for i in range(1,t):    
-        k_short[i]=sks[i-1]*prod(k_short[i-1],l[i-1],alpha,b)+(1-delta)*k_short[i-1]
+        k_short[i]=sks[i-1]*prod(k_short[i-1],l_short[i-1],alpha,b)+(1-delta)*k_short[i-1]
     
-    y_short = prod(k_short,l,alpha,b)
+    y_short = prod(k_short,l_short,alpha,b)
     
-    return total_utility(y_short*(1-sks)/l, beta, theta)
+    return total_utility(y_short*(1-sks)/l_short, beta, theta)
 
-def optimal_sks(t, b, l, beta, delta, alpha, theta, k0, first=True):
-    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, beta, theta, alpha, delta)
+def optimal_sks(t, b, l0, n, beta, delta, alpha, theta, k0, first=True):
+    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l0, n, b, beta, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
 
     bounds = np.full((t,2),[0,1])
