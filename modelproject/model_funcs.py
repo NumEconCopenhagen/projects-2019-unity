@@ -1,23 +1,6 @@
 import sympy as sm
-
-def steadystate():
-    
-    sk = sm.symbols('s_Kt')
-    alpha = sm.symbols('alpha')
-    k =sm.symbols('k^{*}')
-    delta = sm.symbols('delta')
-    n = sm.symbols('n')
-    b = sm.symbols('B')
-    sseq = sm.Eq(k,1/(1+n)*(sk*b*k**alpha+(1-delta)*k))
-    ss_k = sm.solve(sseq,k)[0]
-    sm.Eq(k,ss_k)
-    
-    find_ssk_sk = sm.lambdify((k,b,delta,n,alpha),sm.solve(sseq,sk)[0])
-    return sm.Eq(k,ss_k),find_ssk_sk
-
-
-from scipy import optimize
 import numpy as np
+from scipy import optimize
 
 ## Micro optimization
 def total_utility(c, weight, theta):
@@ -51,6 +34,8 @@ def tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta):
 
 
 def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
+    '''Optimizes the utility of the representative household
+    by simulating the predicted future'''
     obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
 
@@ -85,6 +70,24 @@ def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
 def capitalakku(b,k,l,sk,alpha,delta):
     return prod(k,l,alpha,b)*sk+(1-delta)*k
 
+def solowwalk(k0, b, l0, n, sk, alpha, delta, t_big):
+    k_path = np.array([k0])
+    l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
+    y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
+    
+    for i in range(1,t_big):
+        k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk,alpha,delta)
+        y_plus = prod(k_plus,l_path[i-1],alpha,b)
+        
+        k_path = np.append(k_path, k_plus)
+        y_path = np.append(y_path, y_plus)
+        
+    k_pr_path = k_path/l_path   
+    y_pr_path = y_path/l_path                      
+    return k_pr_path, y_pr_path
+
+
+
 def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
     k_path = np.array([k0])
     l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
@@ -107,6 +110,35 @@ def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
     return k_pr_path, y_pr_path, sk_path
 
 
+## steady state calculations
+def steadystate():
+    
+    sk = sm.symbols('s_Kt')
+    alpha = sm.symbols('alpha')
+    k =sm.symbols('k^{*}')
+    delta = sm.symbols('delta')
+    n = sm.symbols('n')
+    b = sm.symbols('B')
+    sseq = sm.Eq(k,1/(1+n)*(sk*b*k**alpha+(1-delta)*k))
+    ss_k = sm.solve(sseq,k)[0]
+    sm.Eq(k,ss_k)
+    
+    find_ssk_sk = sm.lambdify((k,b,delta,n,alpha),sm.solve(sseq,sk)[0])
+    return sm.Eq(k,ss_k),find_ssk_sk
+
+def find_ssk_sk(k,b,delta,n,alpha):
+    return (k**(1-alpha)*(delta+n))/b
+
+def find_ss(t, b, n, beta, delta, alpha, theta, bracket):
+    weight = np.array([beta**i for i in range(t)])
+    obj = lambda k_star: find_ssk_sk(k_star,b,delta,n,alpha)-optimal_sks2(t, b, n, weight, delta, alpha, theta, k_star,1)
+    res = optimize.root_scalar(obj,method='brentq',bracket=bracket)
+    if res.converged:
+        k_star = res.root
+        sk_star = find_ssk_sk(k_star,b,delta,n,alpha)
+        return k_star,sk_star
+    else:
+        print('Convergence failed')
 
 
 # Plotting function:
