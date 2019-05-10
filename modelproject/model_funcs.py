@@ -54,8 +54,9 @@ def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
     obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
 
-    bounds = np.full((t,2),[0,1])
-    res = optimize.minimize(obj, sks0, method='SLSQP', bounds=bounds)
+    bounds = np.full((t,2),[1e-8,0.99999])
+    res = optimize.minimize(obj, sks0, method='SLSQP', 
+        bounds=bounds,)
     
     if res.success:
         if first:
@@ -64,3 +65,10 @@ def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
             return res.x  
     else:
         print('Optimization was sadly not succesfull')
+
+
+
+# Plotting function:
+from bokeh.io import output_notebook, push_notebook,show
+from bokeh.plotting import figure, show, output_file
+from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
