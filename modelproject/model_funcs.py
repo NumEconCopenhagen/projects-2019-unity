@@ -66,9 +66,79 @@ def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
     else:
         print('Optimization was sadly not succesfull')
 
+def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
+    l = np.array([l0*(1+n)**i for i in range(t)])
+    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta)
+    sks0 = np.linspace(alpha,0,t)
+
+    bounds = np.full((t,2),[1e-8,0.99999])
+    res = optimize.minimize(obj, sks0, method='SLSQP', 
+        bounds=bounds,)
+    
+    if res.success: 
+        return res.x[0]
+    else:
+        print('Optimization was sadly not succesfull')
+
+
+# Macro, the solow walk
+def capitalakku(b,k,l,sk,alpha,delta):
+    return prod(k,l,alpha,b)*sk+(1-delta)*k
+
+def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
+    k_path = np.array([k0])
+    l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
+    y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
+    
+    sk_path = np.array([optimal_sks2(
+        t, b, n, weight, delta, alpha, theta, k_path[0],l_path[0])])
+    
+    for i in range(1,t_big):
+        k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk_path[i-1],alpha,delta)
+        y_plus = prod(k_plus,l_path[i-1],alpha,b)
+        sk_plus = np.array([optimal_sks2(t, b, n, weight, delta, alpha, theta, k_plus,l_path[i])])
+        
+        k_path = np.append(k_path, k_plus)
+        y_path = np.append(y_path, y_plus)
+        sk_path = np.append(sk_path,sk_plus)
+        
+    k_pr_path = k_path/l_path   
+    y_pr_path = y_path/l_path                      
+    return k_pr_path, y_pr_path, sk_path
+
+
 
 
 # Plotting function:
 from bokeh.io import output_notebook, push_notebook,show
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
+
+def plotting(x,y_names, x_array, y_arrays,y_calls,y_name ='Savings rate',title = 'Figure'
+            , colors= ['red','blue','green','yellow'],legendlocation="top_center"): 
+    
+
+    tools="pan,box_zoom,reset,save"
+    tooltips=[(f'{x}','@x{0,0.00}')]
+    
+    for yn,yc in zip(y_names,y_calls):
+        text = '@'+f'{yc}'+'{0.00}'
+        tooltips.append((f'{y_name} for {yn}',text))
+    
+    hover = HoverTool(tooltips=tooltips)
+    data = {'x': x_array}
+    for yc, y_array in zip(y_calls,y_arrays):
+        data[f'{yc}']=y_array
+        
+    source = ColumnDataSource(data)
+    
+    p = figure(title=f'{title}',tools=[hover,tools], 
+               x_axis_label=f'{x}', y_axis_label=f'{y_name}')
+    for i,(yc,yn) in enumerate(zip(y_calls,y_names)):
+        p.line(x='x', y=f'{yc}', source=source, 
+           legend= f'{yn}', color = colors[i])
+    
+    p.legend.location = legendlocation
+    
+    show(p,notebook_handle=True)
+    
