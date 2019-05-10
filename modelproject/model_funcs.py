@@ -52,6 +52,10 @@ def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
         print('Optimization was sadly not succesfull')
 
 def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
+    '''This funcition also solves the maximization problem but instead of taking 
+    a vector of populations growth, it only take l0 and calculates the rest
+    this is for use in the simulation of the macro model, since the population is changing in every period. 
+    '''
     l = np.array([l0*(1+n)**i for i in range(t)])
     obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
@@ -71,6 +75,9 @@ def capitalakku(b,k,l,sk,alpha,delta):
     return prod(k,l,alpha,b)*sk+(1-delta)*k
 
 def solowwalk(k0, b, l0, n, sk, alpha, delta, t_big):
+    '''Simulates the tradtional solow model with a fixed savings rate
+    '''
+
     k_path = np.array([k0])
     l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
     y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
@@ -89,6 +96,11 @@ def solowwalk(k0, b, l0, n, sk, alpha, delta, t_big):
 
 
 def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
+    '''Simulates the modifed solow model. In each period, the representative household
+    calculates the preffered savingsrate in that period and the next period is simulated
+    using that savings rate.
+    '''
+
     k_path = np.array([k0])
     l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
     y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
@@ -112,7 +124,10 @@ def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
 
 ## steady state calculations
 def steadystate():
-    
+    '''
+    Using sympy to calculate steady state in solow-model
+    '''
+
     sk = sm.symbols('s_Kt')
     alpha = sm.symbols('alpha')
     k =sm.symbols('k^{*}')
@@ -130,8 +145,15 @@ def find_ssk_sk(k,b,delta,n,alpha):
     return (k**(1-alpha)*(delta+n))/b
 
 def find_ss(t, b, n, beta, delta, alpha, theta, bracket):
+    '''
+    Finding the steady state of the model by figuring out which mount of capital,
+    that makes the optimal savings rate chosen by the consumer equal
+    to the savings rate the implies that this amount of capital is the steady state. 
+    '''
     weight = np.array([beta**i for i in range(t)])
-    obj = lambda k_star: find_ssk_sk(k_star,b,delta,n,alpha)-optimal_sks2(t, b, n, weight, delta, alpha, theta, k_star,1)
+
+    obj = lambda k_star: find_ssk_sk(k_star,b,delta,n,alpha)-optimal_sks2(
+        t, b, n, weight, delta, alpha, theta, k_star,1)
     res = optimize.root_scalar(obj,method='brentq',bracket=bracket)
     if res.converged:
         k_star = res.root
@@ -149,7 +171,10 @@ from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
 def plotting(x,y_names, x_array, y_arrays,y_calls,y_name ='Savings rate',title = 'Figure'
             , colors= ['red','blue','green','yellow'],legendlocation="top_center"): 
     
-
+    '''
+    Bokeh plotting
+    '''
+    
     tools="pan,box_zoom,reset,save"
     tooltips=[(f'{x}','@x{0,0.00}')]
     
