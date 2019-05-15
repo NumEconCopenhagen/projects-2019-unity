@@ -2,12 +2,14 @@ import sympy as sm
 import numpy as np
 from scipy import optimize
 
+
 ## Micro optimization
 def total_utility(c, weight, theta):
     '''
     Sums utility for c for multiple years
     c is an array 
     '''
+
     uts = (c**(1-theta)-1)/(1-theta)
     # sum of utitity
     t_u = np.dot(uts,weight)
@@ -74,15 +76,15 @@ def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
 def capitalakku(b,k,l,sk,alpha,delta):
     return prod(k,l,alpha,b)*sk+(1-delta)*k
 
-def solowwalk(k0, b, l0, n, sk, alpha, delta, t_big):
+def solowwalk(k0, b, l0, n, sk, alpha, delta, timeline):
     '''Simulates the tradtional solow model with a fixed savings rate
     '''
 
     k_path = np.array([k0])
-    l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
+    l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
     y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
     
-    for i in range(1,t_big):
+    for i in range(1,timeline):
         k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk,alpha,delta)
         y_plus = prod(k_plus,l_path[i-1],alpha,b)
         
@@ -95,20 +97,20 @@ def solowwalk(k0, b, l0, n, sk, alpha, delta, t_big):
 
 
 
-def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
+def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, timeline):
     '''Simulates the modifed solow model. In each period, the representative household
     calculates the preffered savingsrate in that period and the next period is simulated
     using that savings rate.
     '''
 
     k_path = np.array([k0])
-    l_path = np.array([l0*(1+n)**i for i in list(range(t_big))])
+    l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
     y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
     
     sk_path = np.array([optimal_sks2(
         t, b, n, weight, delta, alpha, theta, k_path[0],l_path[0])])
     
-    for i in range(1,t_big):
+    for i in range(1,timeline):
         k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk_path[i-1],alpha,delta)
         y_plus = prod(k_plus,l_path[i-1],alpha,b)
         sk_plus = np.array([optimal_sks2(t, b, n, weight, delta, alpha, theta, k_plus,l_path[i])])
@@ -122,13 +124,47 @@ def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, t_big):
     return k_pr_path, y_pr_path, sk_path
 
 
+def new_mod_solowwalk(k0, l0, b,n, alpha, delta, sk_interp, timeline):
+    '''
+    Simulates the modifed solow model. In each period, the representative household
+    calculates the preffered savingsrate in that period and the next period is simulated
+    using that savings rate. This one uses interpolation.
+    '''
+    k_path = np.array([k0])
+    l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
+    y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
+    
+    sk_path = np.array(sk_interp([k_path[0]/l_path[0]]))
+    
+    for i in range(1,timeline):
+        k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk_path[i-1],alpha,delta)
+        y_plus = prod(k_plus,l_path[i-1],alpha,b)
+        sk_plus = np.array(sk_interp([k_plus/l_path[i]]))
+        
+        k_path = np.append(k_path, k_plus)
+        y_path = np.append(y_path, y_plus)
+        sk_path = np.append(sk_path,sk_plus)
+        
+    k_pr_path = k_path/l_path   
+    y_pr_path = y_path/l_path                      
+    return k_pr_path, y_pr_path, sk_path
+
+
+
 ## steady state calculations
+
+def find_ssk_sk(k,b,delta,n,alpha):
+    return (k**(1-alpha)*(delta+n))/b
+
+def find_ssk_k(sk,b,delta,n,alpha):
+    return ((b*sk)/(delta+n))**(1/(1-alpha))
+    
 def steadystate():
     '''
     Using sympy to calculate steady state in solow-model
     '''
 
-    sk = sm.symbols('s_Kt')
+    sk = sm.symbols('s_K')
     alpha = sm.symbols('alpha')
     k =sm.symbols('k^{*}')
     delta = sm.symbols('delta')
@@ -139,10 +175,8 @@ def steadystate():
     sm.Eq(k,ss_k)
     
     find_ssk_sk = sm.lambdify((k,b,delta,n,alpha),sm.solve(sseq,sk)[0])
-    return sm.Eq(k,ss_k),find_ssk_sk
+    return sm.Eq(k,ss_k)
 
-def find_ssk_sk(k,b,delta,n,alpha):
-    return (k**(1-alpha)*(delta+n))/b
 
 def find_ss(t, b, n, beta, delta, alpha, theta, bracket):
     '''
@@ -162,20 +196,51 @@ def find_ss(t, b, n, beta, delta, alpha, theta, bracket):
     else:
         print('Convergence failed')
 
+def new_find_ss(sk_interp, b, n, beta, delta, alpha, bracket):
+    '''
+    Finding the steady state of the model by figuring out which mount of capital,
+    that makes the optimal savings rate chosen by the consumer equal
+    to the savings rate the implies that this amount of capital is the steady state. 
+    This uses interpolate.
+    '''
+    
+
+    obj = lambda k_star: find_ssk_sk(k_star,b,delta,n,alpha)-sk_interp([k_star])[0]
+    res = optimize.root_scalar(obj,method='brentq',bracket=bracket)
+    if res.converged:
+        k_star = res.root
+        sk_star = find_ssk_sk(k_star,b,delta,n,alpha)
+        return k_star,sk_star
+    else:
+        print('Convergence failed')
+
 
 # Plotting function:
 from bokeh.io import output_notebook, push_notebook,show
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
 
-def plotting(x,y_names, x_array, y_arrays,y_calls,y_name ='Savings rate',title = 'Figure'
-            , colors= ['red','blue','green','yellow'],legendlocation="top_center"): 
+def plotting(x,y_names, x_array, y_arrays,y_name ='Savings rate', title='Figure',
+                colors= ['red','blue','green','purple','yellow'],
+                legendlocation="top_center",tools="pan,wheel_zoom,box_zoom,reset,save"): 
     
     '''
     Bokeh plotting
     '''
     
-    tools="pan,box_zoom,reset,save"
+
+
+     # Bokeh needs a name for the data that neither has spaces nor numbers
+    # because we want the option to do this we define abitrairy calls via the alphabeth. 
+    calls = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
+     'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    y_calls = []
+
+    for i in range(len(y_names)):
+        y_calls.append(calls[i])
+    
+
+
     tooltips=[(f'{x}','@x{0,0.00}')]
     
     for yn,yc in zip(y_names,y_calls):
@@ -198,4 +263,3 @@ def plotting(x,y_names, x_array, y_arrays,y_calls,y_name ='Savings rate',title =
     p.legend.location = legendlocation
     
     show(p,notebook_handle=True)
-    
