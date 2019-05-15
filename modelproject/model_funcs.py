@@ -158,7 +158,7 @@ def find_ssk_sk(k,b,delta,n,alpha):
 
 def find_ssk_k(sk,b,delta,n,alpha):
     return ((b*sk)/(delta+n))**(1/(1-alpha))
-    
+
 def steadystate():
     '''
     Using sympy to calculate steady state in solow-model
@@ -220,7 +220,7 @@ from bokeh.io import output_notebook, push_notebook,show
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
 
-def plotting(x,y_names, x_array, y_arrays,y_name ='Savings rate', title='Figure',
+def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure',
                 colors= ['red','blue','green','purple','yellow'],
                 legendlocation="top_center",tools="pan,wheel_zoom,box_zoom,reset,save"): 
     
