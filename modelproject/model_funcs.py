@@ -1,6 +1,7 @@
 import sympy as sm
 import numpy as np
 from scipy import optimize
+from scipy import interpolate
 
 
 ## Micro optimization
@@ -71,6 +72,16 @@ def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
     else:
         print('Optimization was sadly not succesfull')
 
+def solve_micro(t, b, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_high=30, precision=150):
+    sks = np.zeros(precision)
+    k0s = np.linspace(k_min,k_high,precision)
+    for i in range(precision):
+            sks[i] = optimal_sks2(t, b, n, weight, delta, alpha, theta, k0s[i],l0)
+
+    sk_interp = interpolate.RegularGridInterpolator([k0s], sks,
+        bounds_error=False,fill_value=None)
+    return sks, k0s, sk_interp
+
 
 # Macro, the solow walk
 def capitalakku(b,k,l,sk,alpha,delta):
@@ -128,7 +139,7 @@ def new_mod_solowwalk(k0, l0, b,n, alpha, delta, sk_interp, timeline):
     '''
     Simulates the modifed solow model. In each period, the representative household
     calculates the preffered savingsrate in that period and the next period is simulated
-    using that savings rate. This one uses interpolation.
+    using that savings rate.
     '''
     k_path = np.array([k0])
     l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
@@ -148,7 +159,6 @@ def new_mod_solowwalk(k0, l0, b,n, alpha, delta, sk_interp, timeline):
     k_pr_path = k_path/l_path   
     y_pr_path = y_path/l_path                      
     return k_pr_path, y_pr_path, sk_path
-
 
 
 ## steady state calculations
@@ -222,7 +232,8 @@ from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
 
 def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure',
                 colors= ['red','blue','green','purple','yellow'],
-                legendlocation="top_center",tools="pan,wheel_zoom,box_zoom,reset,save"): 
+                legendlocation="top_center",tools="pan,wheel_zoom,box_zoom,reset,save",
+                width=400, height=500): 
     
     '''
     Bokeh plotting
@@ -254,12 +265,13 @@ def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure
         
     source = ColumnDataSource(data)
     
-    p = figure(title=f'{title}',tools=[hover,tools], 
-               x_axis_label=f'{x}', y_axis_label=f'{y_name}')
+    p = figure(plot_width=width, plot_height=height, title=f'{title}', 
+        tools=[hover,tools], x_axis_label=f'{x}', y_axis_label=f'{y_name}')
+
     for i,(yc,yn) in enumerate(zip(y_calls,y_names)):
         p.line(x='x', y=f'{yc}', source=source, 
            legend= f'{yn}', color = colors[i])
     
     p.legend.location = legendlocation
     
-    show(p,notebook_handle=True)
+    return p 
