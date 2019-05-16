@@ -10,8 +10,11 @@ def total_utility(c, weight, theta):
     Sums utility for c for multiple years
     c is an array 
     '''
+    if theta == 1:
+        uts =np.log(c)
+    else:
+        uts = (c**(1-theta)-1)/(1-theta)
 
-    uts = (c**(1-theta)-1)/(1-theta)
     # sum of utitity
     t_u = np.dot(uts,weight)
 
