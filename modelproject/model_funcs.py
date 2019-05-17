@@ -23,7 +23,7 @@ def total_utility(c, weight, theta):
 def prod(k,l,alpha,a):
     return (k**alpha)*((a*l)**(1-alpha))
 
-def tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta):
+def tot_ut_multiple_sks_quick(sks, k0, l, a, weight, theta, alpha, delta):
     '''
     Finds total utitilty for a set of years with a savingsrate for each year
     '''
@@ -32,17 +32,19 @@ def tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta):
     k_short[0] = k0
     
     for i in range(1,t):    
-        k_short[i]=sks[i-1]*prod(k_short[i-1],l[i-1],alpha,b)+(1-delta)*k_short[i-1]
+        k_short[i]=sks[i-1]*prod(k_short[i-1],l[i-1],alpha,a)+(1-delta)*k_short[i-1]
     
-    y_short = prod(k_short,l,alpha,b)
+    y_short = prod(k_short,l,alpha,a)
     
     return total_utility(y_short*(1-sks)/l, weight, theta)
 
 
-def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
+def optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=True):
+    
     '''Optimizes the utility of the representative household
     by simulating the predicted future'''
-    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta)
+
+    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, a, weight, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
 
     bounds = np.full((t,2),[1e-8,0.99999])
@@ -57,13 +59,13 @@ def optimal_sks(t, b, l, weight, delta, alpha, theta, k0, first=True):
     else:
         print('Optimization was sadly not succesfull')
 
-def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
+def optimal_sks2(t, a, n, weight, delta, alpha, theta, k0, l0):
     '''This funcition also solves the maximization problem but instead of taking 
     a vector of populations growth, it only take l0 and calculates the rest
     this is for use in the simulation of the macro model, since the population is changing in every period. 
     '''
     l = np.array([l0*(1+n)**i for i in range(t)])
-    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, b, weight, theta, alpha, delta)
+    obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, a, weight, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
 
     bounds = np.full((t,2),[1e-8,0.99999])
@@ -75,32 +77,35 @@ def optimal_sks2(t, b, n, weight, delta, alpha, theta, k0, l0):
     else:
         print('Optimization was sadly not succesfull')
 
-def solve_micro(t, b, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_high=30, precision=150):
+def solve_micro(t, a, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_high=30, precision=150):
     sks = np.zeros(precision)
     k0s = np.linspace(k_min,k_high,precision)
     for i in range(precision):
-            sks[i] = optimal_sks2(t, b, n, weight, delta, alpha, theta, k0s[i],l0)
+            sks[i] = optimal_sks2(t, a, n, weight, delta, alpha, theta, k0s[i],l0)
 
     sk_interp = interpolate.RegularGridInterpolator([k0s], sks,
         bounds_error=False,fill_value=None)
     return sks, k0s, sk_interp
 
 
-# Macro, the solow walk
-def capitalakku(b,k,l,sk,alpha,delta):
-    return prod(k,l,alpha,b)*sk+(1-delta)*k
+## Macro, the solow walks ##
+def capitalakku(a,k,l,sk,alpha,delta):
+    return prod(k,l,alpha,a)*sk+(1-delta)*k
 
-def solowwalk(k0, b, l0, n, sk, alpha, delta, timeline):
+def transition_eq(a,k_pr,n,sk,alpha,delta):
+    return (sk*a*k_pr**alpha+(1-delta)*k_pr)/(1+n)
+
+def solowwalk(k0, a, l0, n, sk, alpha, delta, timeline):
     '''Simulates the tradtional solow model with a fixed savings rate
     '''
 
     k_path = np.array([k0])
-    l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
-    y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
+    l_path = np.array([l0*(1+n)**i for i in range(timeline)])
+    y_path = np.array([prod(k_path[0],l_path[0],alpha,a)])
     
     for i in range(1,timeline):
-        k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk,alpha,delta)
-        y_plus = prod(k_plus,l_path[i-1],alpha,b)
+        k_plus = capitalakku(a,k_path[i-1],l_path[i-1],sk,alpha,delta)
+        y_plus = prod(k_plus,l_path[i-1],alpha,a)
         
         k_path = np.append(k_path, k_plus)
         y_path = np.append(y_path, y_plus)
@@ -110,49 +115,21 @@ def solowwalk(k0, b, l0, n, sk, alpha, delta, timeline):
     return k_pr_path, y_pr_path
 
 
-
-def mod_solowwalk(k0, b, l0, n, alpha, delta, weight, theta, t, timeline):
-    '''Simulates the modifed solow model. In each period, the representative household
-    calculates the preffered savingsrate in that period and the next period is simulated
-    using that savings rate.
-    '''
-
-    k_path = np.array([k0])
-    l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
-    y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
-    
-    sk_path = np.array([optimal_sks2(
-        t, b, n, weight, delta, alpha, theta, k_path[0],l_path[0])])
-    
-    for i in range(1,timeline):
-        k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk_path[i-1],alpha,delta)
-        y_plus = prod(k_plus,l_path[i-1],alpha,b)
-        sk_plus = np.array([optimal_sks2(t, b, n, weight, delta, alpha, theta, k_plus,l_path[i])])
-        
-        k_path = np.append(k_path, k_plus)
-        y_path = np.append(y_path, y_plus)
-        sk_path = np.append(sk_path,sk_plus)
-        
-    k_pr_path = k_path/l_path   
-    y_pr_path = y_path/l_path                      
-    return k_pr_path, y_pr_path, sk_path
-
-
-def new_mod_solowwalk(k0, l0, b,n, alpha, delta, sk_interp, timeline):
+def new_mod_solowwalk(k0, l0, a,n, alpha, delta, sk_interp, timeline):
     '''
     Simulates the modifed solow model. In each period, the representative household
     calculates the preffered savingsrate in that period and the next period is simulated
     using that savings rate.
     '''
     k_path = np.array([k0])
-    l_path = np.array([l0*(1+n)**i for i in list(range(timeline))])
-    y_path = np.array([prod(k_path[0],l_path[0],alpha,b)])
+    l_path = np.array([l0*(1+n)**i for i in range(timeline)])
+    y_path = np.array([prod(k_path[0],l_path[0],alpha,a)])
     
     sk_path = np.array(sk_interp([k_path[0]/l_path[0]]))
     
     for i in range(1,timeline):
-        k_plus = capitalakku(b,k_path[i-1],l_path[i-1],sk_path[i-1],alpha,delta)
-        y_plus = prod(k_plus,l_path[i-1],alpha,b)
+        k_plus = capitalakku(a,k_path[i-1],l_path[i-1],sk_path[i-1],alpha,delta)
+        y_plus = prod(k_plus,l_path[i-1],alpha,a)
         sk_plus = np.array(sk_interp([k_plus/l_path[i]]))
         
         k_path = np.append(k_path, k_plus)
@@ -164,13 +141,13 @@ def new_mod_solowwalk(k0, l0, b,n, alpha, delta, sk_interp, timeline):
     return k_pr_path, y_pr_path, sk_path
 
 
-## steady state calculations
+## steady state calculations ##
 
-def find_ssk_sk(k,b,delta,n,alpha):
-    return (k**(1-alpha)*(delta+n))/b
+def find_ssk_sk(k,a,delta,n,alpha):
+    return (k**(1-alpha)*(delta+n))/a
 
-def find_ssk_k(sk,b,delta,n,alpha):
-    return ((b*sk)/(delta+n))**(1/(1-alpha))
+def find_ssk_k(sk,a,delta,n,alpha):
+    return ((a*sk)/(delta+n))**(1/(1-alpha))
 
 def steadystate():
     '''
@@ -182,16 +159,15 @@ def steadystate():
     k =sm.symbols('k^{*}')
     delta = sm.symbols('delta')
     n = sm.symbols('n')
-    b = sm.symbols('B')
-    sseq = sm.Eq(k,1/(1+n)*(sk*b*k**alpha+(1-delta)*k))
+    a = sm.symbols('A')
+    sseq = sm.Eq(k,1/(1+n)*(sk*a*k**alpha+(1-delta)*k))
     ss_k = sm.solve(sseq,k)[0]
     sm.Eq(k,ss_k)
     
-    find_ssk_sk = sm.lambdify((k,b,delta,n,alpha),sm.solve(sseq,sk)[0])
     return sm.Eq(k,ss_k)
 
 
-def find_ss(t, b, n, beta, delta, alpha, theta, bracket):
+def find_ss(t, a, n, beta, delta, alpha, theta, bracket):
     '''
     Finding the steady state of the model by figuring out which mount of capital,
     that makes the optimal savings rate chosen by the consumer equal
@@ -199,17 +175,17 @@ def find_ss(t, b, n, beta, delta, alpha, theta, bracket):
     '''
     weight = np.array([beta**i for i in range(t)])
 
-    obj = lambda k_star: find_ssk_sk(k_star,b,delta,n,alpha)-optimal_sks2(
-        t, b, n, weight, delta, alpha, theta, k_star,1)
+    obj = lambda k_star: find_ssk_sk(k_star,a,delta,n,alpha)-optimal_sks2(
+        t, a, n, weight, delta, alpha, theta, k_star,1)
     res = optimize.root_scalar(obj,method='brentq',bracket=bracket)
     if res.converged:
         k_star = res.root
-        sk_star = find_ssk_sk(k_star,b,delta,n,alpha)
+        sk_star = find_ssk_sk(k_star,a,delta,n,alpha)
         return k_star,sk_star
     else:
         print('Convergence failed')
 
-def new_find_ss(sk_interp, b, n, beta, delta, alpha, bracket):
+def new_find_ss(sk_interp, a, n, beta, delta, alpha, bracket):
     '''
     Finding the steady state of the model by figuring out which mount of capital,
     that makes the optimal savings rate chosen by the consumer equal
@@ -218,17 +194,17 @@ def new_find_ss(sk_interp, b, n, beta, delta, alpha, bracket):
     '''
     
 
-    obj = lambda k_star: find_ssk_sk(k_star,b,delta,n,alpha)-sk_interp([k_star])[0]
+    obj = lambda k_star: find_ssk_sk(k_star,a,delta,n,alpha)-sk_interp([k_star])[0]
     res = optimize.root_scalar(obj,method='brentq',bracket=bracket)
     if res.converged:
         k_star = res.root
-        sk_star = find_ssk_sk(k_star,b,delta,n,alpha)
+        sk_star = find_ssk_sk(k_star,a,delta,n,alpha)
         return k_star,sk_star
     else:
         print('Convergence failed')
 
 
-# Plotting function:
+##  Plotting functions ## :
 from bokeh.io import output_notebook, push_notebook,show
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
@@ -236,7 +212,7 @@ from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
 def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure',
                 colors= ['red','blue','green','purple','yellow'],
                 legendlocation="top_center",tools="pan,wheel_zoom,box_zoom,reset,save",
-                width=400, height=500): 
+                width=450, height=450): 
     
     '''
     Bokeh plotting
