@@ -239,9 +239,13 @@ def new_find_ss(sk_interp, a, n, beta, delta, alpha, bracket):
 
 
 ##  Plotting functions ## :
-from bokeh.io import output_notebook, push_notebook,show
+
+# Plotting specific imports:
+from bokeh.io import output_notebook, push_notebook, show
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
+from bokeh.layouts import row, column
+import ipywidgets as widgets
 
 def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure',
                 colors= ['red','blue','green','purple','yellow'],
@@ -288,3 +292,82 @@ def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure
     p.legend.location = legendlocation
     
     return p 
+
+
+def plotting_plan():
+    '''
+    Plots the comsumption plan of the representative household, e.g. it creates three plots:
+    One for the savingsrate (sks), one for capital pr. capita(k_pr_plan), 
+    and one for comsumption pr. capita (c_pr_plan).
+    It is plotted interactively so different parameter values can be evaluated. 
+    '''
+
+    # initial plan is solved for and saved as data for bokeh plot: 
+    sks, k_pr_plan, c_pr_plan = comsumption_plan(200, 1, 0.01, 0.99, 0.05, 0.33, 0.5, 8, 1)
+    data = {'T' : np.array(range(200)),'sks' : sks, 'k_pr' : k_pr_plan,'c_pr': c_pr_plan}
+    source = ColumnDataSource(data)
+
+
+    # bokeh tooltips is for showing the values of the figure when hovering the mouse above them.
+    tooltips =[[('T','@T'),('Savings rate','@sks{0.00} %')],[('T','@T'),
+                ('Capital pr. capita','@k_pr{0.00}')],[('T','@T'),('Consumption pr. capita','@c_pr{0.00}')]]
+    
+    tools="pan,wheel_zoom,box_zoom,reset,save"
+
+    
+    titles = ['Savingsrate in %', 'Capita pr. capita', 'Compsumption pr. capita']
+    
+    ps = []
+    
+    # The three plots are created:
+    for title, tooltip in zip(titles,tooltips):
+        ps.append(figure(plot_width=430, plot_height=430, title=title, 
+            tools=[HoverTool(tooltips=tooltip),tools], x_axis_label='T', y_axis_label=title))
+
+    for p,y in zip(ps,['sks','k_pr','c_pr']):
+        p.line(x='T', y=y, source=source, color = 'blue')
+    
+    
+    # Function for interaction:
+    def update_parameters(t=200,theta=0.5,beta=0.99, 
+                        delta=0.05,alpha=1/3, a=1,k0=5,l0=1,n=0.008):
+        '''
+        Takes the parameter values that the user can define interactively,
+        and solves the compsumption plan and updates the plots
+        '''
+        sks, k_pr_plan, c_pr_plan = comsumption_plan(
+            t, a, n, beta, delta, alpha, theta, k0, l0)
+        
+        data = {'T' : np.array(range(t)),'sks' : sks, 
+                'k_pr' : k_pr_plan,'c_pr': c_pr_plan}
+        
+        source.data = ColumnDataSource(data).data
+    
+        #jupyter specific.
+        push_notebook()
+    
+    # The first slider for Time periods is created, since this has to be and interger.
+    sliders = [widgets.IntSlider(min=10,max=500,step=10,value=200, description='T')]
+
+    # Description for the sliders raw-strings are used to enable latex:
+    descriptions = [r'\(\theta\)',r'\(\beta\)',r'\(\delta\)',r'\(\alpha\)',
+                    r'\(A\)',r'\(K_{0}\)',r'\(L_{0}\)','\(n\)']
+    
+    # min,max,step, intial values for all remaning parameters:
+    values = [[0.1,5,0.1,0.5],[0.7,1,0.01,0.99],[0.01,0.15,0.01,0.05],[0.1,0.9,0.1,0.33],
+            [1,10,1,1],[1,25,1,8],[1,25,1,1],[0,0.1,0.01,0.01]]
+    
+    # Sliders for remaing parameters is created in loop.
+    for value, description in zip(values,descriptions):
+        sliders.append(widgets.FloatSlider(
+            min=value[0],max=value[1], step=value[2],value=value[3],
+            description=description, disabled=False, continuous_update=False))
+    
+    widgets.interact(update_parameters, t=sliders[0], theta=sliders[1],
+                    beta=sliders[2], delta=sliders[3], alpha=sliders[4],
+                    a=sliders[5], k0=sliders[6], l0=sliders[7], n=sliders[8])
+    
+    
+    #Rember to show the bokeh-plots:
+    show(row(column(ps[0],ps[2]),ps[1]),notebook_handle=True)
+
