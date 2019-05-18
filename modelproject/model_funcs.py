@@ -87,6 +87,40 @@ def solve_micro(t, a, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_high=30, p
         bounds_error=False,fill_value=None)
     return sks, k0s, sk_interp
 
+def comsumption_plan(t, a, n, beta, delta, alpha, theta, k0, l0):
+    '''
+    Solving the micro problem, returns the entire plan for t periods 
+
+    Args:
+        t (int)         : Number of periods evaluated by the representative household
+        a (float)       : The A parameter in the production function
+        n (float)       : Yearly population growth
+        beta (float)    : Time discount factor of the representative household
+        delta (float)   : Depreciation rate
+        alpha (float)   : Alpha in the productionfunction
+        theta (float)   : Parameter in the utitlty function
+        k0 (float)      : Initial level of capital
+        l0 (float)      : Inital population
+    
+    Returns:
+        sks (np.array)      : The chosen savings rate in each period, timed by 100 to get percentage
+        k_pr_plan(np.array) : Planned level of capital in each period 
+        c_pr_plan (np.array): Planned level of compsumption in each period.
+    '''
+    
+    weight = np.array([beta**i for i in range(t)])
+    l = np.array([l0*(1+n)**i for i in range(t)])
+    sks = optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=False)
+    
+    k_pr_plan = np.array([k0])
+    for i in range(1,t):
+        k_pr_plus = transition_eq(a,k_pr_plan[i-1],n,sks[i-1],alpha,delta)
+        k_pr_plan = np.append(k_pr_plan, k_pr_plus)
+    
+    c_pr_plan = (1-sks)*a*(k_pr_plan**alpha)
+    
+    return sks*100, k_pr_plan, c_pr_plan
+
 
 ## Macro, the solow walks ##
 def capitalakku(a,k,l,sk,alpha,delta):
