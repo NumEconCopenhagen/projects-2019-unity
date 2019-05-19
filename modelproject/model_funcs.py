@@ -246,6 +246,8 @@ from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, HoverTool, NumeralTickFormatter
 from bokeh.layouts import row, column
 import ipywidgets as widgets
+from IPython.display import display
+
 
 def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure',
                 colors= ['red','blue','green','purple','yellow'],
@@ -347,27 +349,34 @@ def plotting_plan():
         push_notebook()
     
     # The first slider for Time periods is created, since this has to be and interger.
-    sliders = [widgets.IntSlider(min=10,max=500,step=10,value=200, description='T')]
+    sliders = {'t' : widgets.IntSlider(min=10,max=500,step=10,value=200, 
+                description='T',orientation ='vertical')}
 
+
+    variables = ['theta','beta','delta','alpha','a','k0','l0','n']
     # Description for the sliders raw-strings are used to enable latex:
     descriptions = [r'\(\theta\)',r'\(\beta\)',r'\(\delta\)',r'\(\alpha\)',
                     r'\(A\)',r'\(K_{0}\)',r'\(L_{0}\)','\(n\)']
     
     # min,max,step, intial values for all remaning parameters:
-    values = [[0.1,5,0.1,0.5],[0.7,1,0.01,0.99],[0.01,0.15,0.01,0.05],[0.1,0.9,0.1,0.33],
+    values = [[0.1,5,0.1,0.5],[0.9,1,0.01,0.99],[0.01,0.15,0.01,0.05],[0.1,0.9,0.1,0.33],
             [1,10,1,1],[1,25,1,8],[1,25,1,1],[0,0.1,0.01,0.01]]
     
-    # Sliders for remaing parameters is created in loop.
-    for value, description in zip(values,descriptions):
-        sliders.append(widgets.FloatSlider(
+    # Sliders for remaing parameters is created in loop and addded to the dictionary.
+    for variable, value, description in zip(variables,values,descriptions):
+        sliders[f'{variable}'] = (widgets.FloatSlider(
             min=value[0],max=value[1], step=value[2],value=value[3],
-            description=description, disabled=False, continuous_update=False))
+            description=description, orientation= 'vertical'))
     
-    widgets.interact(update_parameters, t=sliders[0], theta=sliders[1],
-                    beta=sliders[2], delta=sliders[3], alpha=sliders[4],
-                    a=sliders[5], k0=sliders[6], l0=sliders[7], n=sliders[8])
-    
-    
-    #Rember to show the bokeh-plots:
+    #horizontal box to have the sliders next to eachother
+    box = widgets.HBox([v for v in sliders.values()])
+
+    # linking the sliders to the the update function. 
+    out = widgets.interactive_output(update_parameters, sliders)
+
+    display(out,box)
+
+
+    #Rember to print the bokeh-plots:
     show(row(column(ps[0],ps[2]),ps[1]),notebook_handle=True)
 
