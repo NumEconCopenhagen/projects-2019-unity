@@ -11,7 +11,7 @@ def total_utility(c, weight, theta):
     c is an array 
     '''
     if theta == 1:
-        uts =np.log(c)
+        uts = np.log(c)
     else:
         uts = (c**(1-theta)-1)/(1-theta)
 
@@ -42,7 +42,8 @@ def tot_ut_multiple_sks_quick(sks, k0, l, a, weight, theta, alpha, delta):
 def optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=True):
     
     '''Optimizes the utility of the representative household
-    by simulating the predicted future'''
+    by simulating the predicted future
+    '''
 
     obj = lambda sks: -tot_ut_multiple_sks_quick(sks, k0, l, a, weight, theta, alpha, delta)
     sks0 = np.linspace(alpha,0,t)
@@ -60,7 +61,8 @@ def optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=True):
         print('Optimization was sadly not succesfull')
 
 def optimal_sks2(t, a, n, weight, delta, alpha, theta, k0, l0):
-    '''This funcition also solves the maximization problem but instead of taking 
+    '''
+    This funcition also solves the maximization problem but instead of taking 
     a vector of populations growth, it only take l0 and calculates the rest
     this is for use in the simulation of the macro model, since the population is changing in every period. 
     '''
@@ -77,9 +79,9 @@ def optimal_sks2(t, a, n, weight, delta, alpha, theta, k0, l0):
     else:
         print('Optimization was sadly not succesfull')
 
-def solve_micro(t, a, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_high=30, precision=150):
+def solve_micro(t, a, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_max=30, precision=150):
     sks = np.zeros(precision)
-    k0s = np.linspace(k_min,k_high,precision)
+    k0s = np.linspace(k_min,k_max,precision)
     for i in range(precision):
             sks[i] = optimal_sks2(t, a, n, weight, delta, alpha, theta, k0s[i],l0)
 
@@ -105,7 +107,7 @@ def comsumption_plan(t, a, n, beta, delta, alpha, theta, k0, l0):
     Returns:
         sks (np.array)      : The chosen savings rate in each period, timed by 100 to get percentage
         k_pr_plan(np.array) : Planned level of capital in each period 
-        c_pr_plan (np.array): Planned level of compsumption in each period.
+        c_pr_plan (np.array): Planned level of consumption in each period.
     '''
     
     weight = np.array([beta**i for i in range(t)])
@@ -201,7 +203,7 @@ def steadystate():
     return sm.Eq(k,ss_k)
 
 
-def find_ss(t, a, n, beta, delta, alpha, theta, bracket):
+def find_ss(t, a, n, beta, delta, alpha, theta, bracket=[0.01,30]):
     '''
     Finding the steady state of the model by figuring out which mount of capital,
     that makes the optimal savings rate chosen by the consumer equal
@@ -227,7 +229,6 @@ def new_find_ss(sk_interp, a, n, beta, delta, alpha, bracket):
     This uses interpolate.
     '''
     
-
     obj = lambda k_star: find_ssk_sk(k_star,a,delta,n,alpha)-sk_interp([k_star])[0]
     res = optimize.root_scalar(obj,method='brentq',bracket=bracket)
     if res.converged:
@@ -236,6 +237,43 @@ def new_find_ss(sk_interp, a, n, beta, delta, alpha, bracket):
         return k_star,sk_star
     else:
         print('Convergence failed')
+
+def find_ss_alt(a, n, beta, delta, alpha, theta, k0,l0):
+    t = 200
+    weight = np.array([beta**i for i in range(t)])
+    l = l0*np.array([(1+n)**i for i in range(t)])
+    
+    sks = optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=False)
+    ss_sk = False
+    i = int(0.25*t)
+    while i < int(0.75*t):
+        if np.isclose(sks[i],sks[i+1]):
+            ss_sk = sks[i]
+            break
+
+        i+=1
+
+    if ss_sk==False:
+        # We try again with a longer timerframe
+        t = 400
+        weight = np.array([beta**i for i in range(t)])
+        l = l0*np.array([(1+n)**i for i in range(t)])
+    
+        sks = optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=False)
+        i=0
+        while i < t:
+            if np.isclose(sks[i],sks[i+1]):
+                ss_sk=sks[i]
+                break
+            
+            i += 1 
+    # We use the analytical solution to find the steady state of capital
+    # for this savings rate:
+    ss_k = find_ssk_k(ss_sk,a,delta,n,alpha)
+    return ss_sk, ss_k
+
+
+
 
 
 ##  Plotting functions ## :
@@ -258,8 +296,6 @@ def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure
     Bokeh plotting
     '''
     
-
-
      # Bokeh needs a name for the data that neither has spaces nor numbers
     # because we want the option to do this we define abitrairy calls via the alphabeth. 
     calls = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
@@ -269,7 +305,6 @@ def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure
     for i in range(len(y_names)):
         y_calls.append(calls[i])
     
-
 
     tooltips=[(f'{x}','@x{0,0.00}')]
     
@@ -317,7 +352,7 @@ def plotting_plan():
     tools="pan,wheel_zoom,box_zoom,reset,save"
 
     
-    titles = ['Savingsrate in %', 'Capita pr. capita', 'Compsumption pr. capita']
+    titles = ['Savingsrate in %', 'Capita pr. capita', 'Consumption pr. capita']
     
     ps = []
     
@@ -335,7 +370,7 @@ def plotting_plan():
                         delta=0.05,alpha=1/3, a=1,k0=5,l0=1,n=0.008):
         '''
         Takes the parameter values that the user can define interactively,
-        and solves the compsumption plan and updates the plots
+        and solves the consumption plan and updates the plots
         '''
         sks, k_pr_plan, c_pr_plan = comsumption_plan(
             t, a, n, beta, delta, alpha, theta, k0, l0)

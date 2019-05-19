@@ -14,8 +14,6 @@ import pandas as pd
 from matplotlib.ticker import FuncFormatter
 
 
-
-
 def style_plot(from_year = 2015, to_year = 2018):
 
     plt.style.use(["fivethirtyeight"])
