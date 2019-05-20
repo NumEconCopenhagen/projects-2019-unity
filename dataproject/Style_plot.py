@@ -229,7 +229,7 @@ def figure_2(df):
     with horisontal lines.
     
     
-    First we want to found the dates where we buy and sell. 
+    First we want to find the dates where we buy and sell. 
     In df["where"] there is only zeroes and ones. We know that when it is one, 
     we are holding the stock and 0 when we dont want to hold the stock. 
     By finding out when df["where"] goes from 0 to 1, and 1 to 0. We can
@@ -241,7 +241,7 @@ def figure_2(df):
     '''
     df["Signal"] = np.sign(df["where"] - df["where"].shift(1))
     
-    '''Then we are making use of our new dataframe'''
+    '''Then we make use of our new dataframe'''
     horizontal_lines_gold = df.loc[df["Signal"] == 1].index
     horizontal_lines_death = df.loc[df["Signal"] == -1].index
     '''
