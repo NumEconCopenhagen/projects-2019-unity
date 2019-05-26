@@ -90,7 +90,7 @@ def figure_1(from_year = 2015, to_year = 2018):
     ax2.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%Y-%m"))
     
     '''Setting title and labels'''
-    ax1.set_title("Analyzing Tesla's stock price", size=30, color="Black", fontweight="bold")
+    ax1.set_title("Figure 1: Analyzing Tesla's stock price", size=30, color="Black", fontweight="bold")
     
     plt.xlabel("Date")
     plt.ylabel("Volume")
@@ -224,7 +224,7 @@ def figure_2(df):
     
     
     '''Setting, labels, patches and title'''
-    plot2.set_title("Strategy VS Market", size=30, color="Black", fontweight="bold")
+    plot2.set_title("Figure 2: Strategy VS Market", size=30, color="Black", fontweight="bold")
     Market_label = mpatches.Patch(color="black", label= "Market")
     Strategy_label = mpatches.Patch(color="red", label="Strategy")
     Buying_label = mpatches.Patch(color="tab:purple", label="Buying")
@@ -278,7 +278,7 @@ def figure_3(df):
     plot3 = df[['Diff']].cumsum().plot(grid=True, linestyle = "-", color=("red"))
     
     
-    plot3.set_title("Difference in percentage points", size=30, color="Black", fontweight="bold")
+    plot3.set_title("Figure 3: Difference in percentage points", size=30, color="Black", fontweight="bold")
     Percent_points_different_label = mpatches.Patch(color="Red", label= "Difference in percentage points")
     plot3.legend(handles=[Percent_points_different_label], 
                  loc="upper left", prop={'size': 15}, frameon=False), plt.ylabel("Percentage Points"), plt.xticks(rotation=0)
