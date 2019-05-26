@@ -1,3 +1,13 @@
+# Welcome to the Unity group project
+
+This github contains the three projects that the Unity group has made while completing the course: Introduction to Programming and Numerical Analysis at KU.
+The three projects are as follows
+* [/dataproject](/dataproject): Where we have analysed a technial stock theory using the yahoo stock database
+* [/modelproject](/modelproject): Where we have analysed a solowmodel with a microfounded savingsrate (Ramsey model)
+* [/examproject](/examproject): Where we have answered the probelms given in the exam week 
+We have also included Feedback.txt file with the list of feedback each groupmember has given feedback to.
+
+The original readme:
 # Welcome to your NumEconCPH repository
 
 We have provided you with the following repository that contains the required structure for this course. **You should not change any folders in the root directory**.
