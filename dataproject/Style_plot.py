@@ -43,15 +43,19 @@ def figure_1(from_year = 2015, to_year = 2018):
     datetime. Note that we can change "TSLA" to another company, and get the same, 
     results. (Although the arrows and text won't change). 
     '''
-    start = dt.datetime(from_year, 1, 1)
+    start_load = dt.datetime(from_year-1, 1, 1)
+    start_show = dt.datetime(from_year, 1, 1)
     end = dt.datetime(to_year, 1, 1)
-    df = web.DataReader(['TSLA'], 'yahoo', start, end)
+    df = web.DataReader(['TSLA'], 'yahoo', start_load, end)
     df["Date"]=matplotlib.dates.date2num(df.index.to_pydatetime())
     
     ''' Making our two moving averages.''' 
     df["50ma"] = df["Adj Close"].rolling(window=50, min_periods=0).mean() 
     df["200ma"] = df["Adj Close"].rolling(window=200, min_periods=0).mean() 
     
+    df = df.loc[start_show:]
+
+
     '''Describing our two graphs.'''
     ax1 = plt.subplot2grid((7,1), (0,0), rowspan=5, colspan=1)
     plt.ylabel("Stock price")
