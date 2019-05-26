@@ -7,7 +7,7 @@ The three projects are as follows
 * [/examproject](/examproject): Where we have answered the probelms given in the exam week 
 We have also included Feedback.txt file with the list of feedback each groupmember has given feedback to.
 
-The original readme:
+**The original readme:**
 # Welcome to your NumEconCPH repository
 
 We have provided you with the following repository that contains the required structure for this course. **You should not change any folders in the root directory**.
