@@ -1,15 +1,10 @@
-# Dataproject
+Welcome to our project! (Warning: Do not base your real-life money investing on this theory)
 
-For our project we have chosen to analyse historical stock data from the yahoo-database 
-We will base our analysis on a book by Lars Tvede aobut the 'golden' and 'dead' cross.
+Project topic: Investing
 
-We got inspired by Lars Tvede’s book “Børshandlens psykologi / The psychology of the stock market”, to use python for analyzing stocks. In general, there is two basic analytical method to go around analyzing a stock – Fundamental and technical analysis. Fundamental analysis is what most people think of when analyzing a stock. Basically, you examine the key ratios of a business to determine its financial health. Technical is much different in the sense of only using historical market data to predict future market behavior. Most professional investors combine these to create an edge over the market. In this assignment we will only be focusing on the technical aspect. Since python excel in plotting and attracting data from the internet, it’s a good tool to analyzing historical data. In this assignment we are trying to achieve the basic things when you start out making a technical analysis. Which mean plotting and making it easily for future use to graph for other companies. Furthermore, adding a bit of technical aspects in form of pinpointing golden- and death cross. 
+In this project we want to look at gold- and deathcross, which are market signals found using running means.  We want to analyze, if we can beat the market, by solely making an investing strategy based on these buy- and sell signals. 
+We have separated our project in two files. One for representation and one for all the codes. To produce our results, one only needs to open the dataProject.ipynb file (located in projects-2019-unity/dataproject) which produces and shows the result, in code made specifically for Jupyter Notebook. This code relies heavily on functions defined in the funtions.py file (located in projects-2019-unity/dataproject/dataproject/). In this file we have defined functions that download the data from yahoo and also that plots the data in an interactive way. The functions are very versatile a can take all the stocks and years located in the Yahoo database. All the other files are not directly linked to our project, they are attempt and exercises made during the process but everything important has been rewritten in clear formatting in functions.py and dataProject.ipynb.
+Additionally, in making our graph we have relied heavily on the bokeh visualization library, so it will be necessary to 'pip install bokeh' or 'conda install bokeh' before trying to run the files. We have also used a module called mpl-finance so 'pip install mpl-finance' may also be necessary to run first.
 
-To produce our result one only needs to open the dataProject.ipynb file (located in projects-2019-unity/dataproject) which produces and shows the result, in code made specificly for Jupyter Notebook. 
-This code relies heavily on functions defined in the funtions.py file (located in projects-2019-unity/dataproject/dataproject/). In this file we have defined funtions that download the data from yahoo and also that plots the data in an interactive way. The functions are very versatile a can take all the stocks and years located in the Yahoo database.
-All the other files are not directly linked to our project, they are attempt and excercises made during the process but everything important has been rewritten in clear formatting in functions.py and dataProject.ipynb.
-
-Aditionally in making our graph we have relied heavily on the bokeh visualization library, so it will be necesary to 'pip install bokeh' or 'conda install bokeh' before trying to run the files. We have also used a module called mpl-finance so 'pip install mpl-finance' may also be necesary to run first.
-
-Best regards
-Unity group
+Happy reading! 
+Best regards Unity group. 

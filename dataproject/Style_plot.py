@@ -203,7 +203,11 @@ def figure_2(df):
     df["Strategy"] = df["Market"] * df["where"].shift(1)
     df["Strategy cum"]=((df["Strategy"]+1).cumprod()-1)
     
-    
+    # scale up:
+    df["Market cum"]=df["Market cum"]*100
+    df["Market"] = df["Market"]*100
+    df["Strategy"] = df["Strategy"]*100
+    df["Strategy cum"] =df["Strategy cum"]*100
     
 ########## Part 4: How did our strategy do? ###################################
     
@@ -222,7 +226,7 @@ def figure_2(df):
     Buying_label = mpatches.Patch(color="tab:purple", label="Buying")
     Selling_label = mpatches.Patch(color="tab:brown", label="Selling")
     plot2.legend(handles=[Market_label, Strategy_label, Buying_label, Selling_label], 
-                 loc="upper left", prop={'size': 15}, frameon=False), plt.ylabel("Rate of return"), plt.xticks(rotation=0)
+                 loc="upper left", prop={'size': 15}, frameon=False), plt.ylabel("Rate of return in percent"), plt.xticks(rotation=0)
     
     '''
     To clearly see, when we want sell and buy, we want to mark these days marked
