@@ -7,15 +7,15 @@ from scipy import interpolate
 ## Micro optimization
 def total_utility(c, weight, theta):
     '''
-    Sums utility for comsumption for multiple years
+    Sums utility for consumption for multiple years
     Args:
-            c (array)       : Containg floats of comsumption in each year
+            c (array)       : Containg floats of consumption in each year
             weight (array)  : This is the time preference weights, calcualted as: beta to the power of t, 
                                 where beta<1 and t is the number of the period.
             theta (float)   : Parameter of utility function
 
     Returns:
-            t_u (float)     : Total expected utility given the comsumption
+            t_u (float)     : Total expected utility given the consumption
 
     '''
     if theta == 1:
@@ -127,7 +127,7 @@ def optimal_sks2(t, a, n, weight, delta, alpha, theta, k0, l0):
 
 def solve_micro(t, a, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_max=30, precision=150):
     '''
-    Finds the optimal savingsrate of the comsumer in period 0,
+    Finds the optimal savingsrate of the consumer in period 0,
     for different levels of inital capital.
     Args:
             t (int)             : Amount of time periods examined
@@ -155,9 +155,9 @@ def solve_micro(t, a, n, weight, delta, alpha, theta,l0,k_min=1e-4, k_max=30, pr
         bounds_error=False,fill_value=None)
     return sks, k0s, sk_interp
 
-def comsumption_plan(t, a, n, beta, delta, alpha, theta, k0, l0):
+def consumption_plan(t, a, n, beta, delta, alpha, theta, k0, l0):
     '''
-    Solving the micro problem, optimizing comsumption via savingsrate, 
+    Solving the micro problem, optimizing consumption via savingsrate, 
     given restrictions on production and capital,
     returns the entire plan for t periods 
 
@@ -363,8 +363,8 @@ def find_ss_interp(sk_interp, a, n, delta, alpha, bracket=[0.01,30]):
 def find_ss_ramsey(a, n, beta, delta, alpha, theta, k0=10,l0=1,path=False):
    
     '''
-    Finding the steady state of the model by solving the comsumer optimization
-    once, and finding the point in comsumption plan where savings stabilizes.
+    Finding the steady state of the model by solving the consumer optimization
+    once, and finding the point in consumption plan where savings stabilizes.
 
     Args:
             a (float)       : The A parameter in the production function
@@ -392,7 +392,7 @@ def find_ss_ramsey(a, n, beta, delta, alpha, theta, k0=10,l0=1,path=False):
     sks = optimal_sks(t, a, l, weight, delta, alpha, theta, k0, first=False)
     ss_sk = False
 
-    # We only search for steady state in middle of the comsumptionp plan,
+    # We only search for steady state in middle of the consumptionp plan,
     # since sometimes the savingsrate is constant at 0 at either the begining or end 
     i = int(0.25*t)
     while i < int(0.75*t):
@@ -515,14 +515,14 @@ def plotting(x,y_names,  x_array, y_arrays,y_name ='Savings rate', title='Figure
 
 def plotting_plan():
     '''
-    Plots the comsumption plan of the representative household, e.g. it creates three plots:
+    Plots the consumption plan of the representative household, e.g. it creates three plots:
     One for the savingsrate (sks), one for capital pr. capita(k_pr_plan), 
-    and one for comsumption pr. capita (c_pr_plan).
+    and one for consumption pr. capita (c_pr_plan).
     It is plotted interactively so different parameter values can be evaluated. 
     '''
 
     # initial plan is solved for and saved as data for bokeh plot: 
-    sks, k_pr_plan, c_pr_plan = comsumption_plan(200, 1, 0.01, 0.99, 0.05, 0.33, 0.5, 8, 1)
+    sks, k_pr_plan, c_pr_plan = consumption_plan(200, 1, 0.01, 0.99, 0.05, 0.33, 0.5, 8, 1)
     data = {'T' : np.array(range(200)),'sks' : sks, 'k_pr' : k_pr_plan,'c_pr': c_pr_plan}
     source = ColumnDataSource(data)
 
@@ -554,7 +554,7 @@ def plotting_plan():
         Takes the parameter values that the user can define interactively,
         and solves the consumption plan and updates the plots
         '''
-        sks, k_pr_plan, c_pr_plan = comsumption_plan(
+        sks, k_pr_plan, c_pr_plan = consumption_plan(
             t, a, n, beta, delta, alpha, theta, k0, l0)
         
         data = {'T' : np.array(range(t)),'sks' : sks, 

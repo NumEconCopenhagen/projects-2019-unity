@@ -235,18 +235,18 @@ def utility(x1,x2,x3,beta1,beta2,beta3, gamma):
 
 def utility_distribution(x1s,x2s,x3s,x1s_equal,x2s_equal,x3s_equal,betas,gamma,plot_range=[0,4]):
     '''
-    Calculates the distribution of utility for all comsumer, for a given gamma and for two levels of comsumption for all comsumers,
+    Calculates the distribution of utility for all consumer, for a given gamma and for two levels of consumption for all consumers,
     one derived from randomly distributed endowments, and one for equally distributed endowments
     Calculates the mean and variance, and makes a two figures containing everything
 
     Args:
-            x1s (array)        : Comsumption of good 1 for each comsumer
-            x2s (array)        : Comsumption of good 2 for each comsumer
-            x3s (array)        : Comsumption of good 3 for each comsumer
-            x1s_equal (array)  : Comsumption of good 1 for each comsumer (Equal distribution of endowments)
-            x2s_equal (array)  : Comsumption of good 2 for each comsumer (Equal distribution of endowments)
-            x2s_equal (array)  : Comsumption of good 3 for each comsumer (Equal distribution of endowments)
-            betas (array)      : Containing beta for all comsumers for all goods
+            x1s (array)        : Consumption of good 1 for each consumer
+            x2s (array)        : Consumption of good 2 for each consumer
+            x3s (array)        : Consumption of good 3 for each consumer
+            x1s_equal (array)  : Consumption of good 1 for each consumer (Equal distribution of endowments)
+            x2s_equal (array)  : Consumption of good 2 for each consumer (Equal distribution of endowments)
+            x2s_equal (array)  : Consumption of good 3 for each consumer (Equal distribution of endowments)
+            betas (array)      : Containing beta for all consumers for all goods
             gamma (float)      : Parameter
             plot_range(list)   : Containing min and max of range of the plotted x-axis. 
     Returns:
